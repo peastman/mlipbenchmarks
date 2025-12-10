@@ -28,13 +28,18 @@ def create_calculator(name):
         case 'aimnet2':
             from aimnet.calculators import AIMNet2ASE
             return AIMNet2ASE('aimnet2')
+        case 'aceff-1.1':
+            from huggingface_hub import hf_hub_download
+            from aceff_calculator import AceFFCalculator
+            model_file_path = hf_hub_download(repo_id='Acellera/AceFF-1.1', filename='aceff_v1.1.ckpt')
+            return AceFFCalculator(model_file=model_file_path,  device='cuda')
     raise ValueError(f'Unknown model {name}')
 
 def supports_charge(name):
-    return name in ['mace-omol-0', 'orb-v3', 'aimnet2']
+    return name in ['mace-omol-0', 'orb-v3', 'aimnet2', 'aceff-1.1']
 
 def set_charge(atoms, name, charge, spin):
-    if name in ['mace-omol-0', 'orb-v3']:
+    if name in ['mace-omol-0', 'orb-v3', 'aceff-1.1']:
         atoms.info['charge'] = charge
         atoms.info['spin'] = spin
     elif name == 'aimnet2':
@@ -48,5 +53,8 @@ def supported_elements(name):
         return set(range(1, 90))
     if name == 'aimnet2':
         return set(ase.atom.atomic_numbers[symbol] for symbol in ['H', 'B', 'C', 'N', 'O', 'F', 'Si', 'P', 'S', 'Cl', 'As', 'Se', 'Br', 'I'])
+    if name == 'aceff-1.1':
+        from aceff_calculator import ACEFF_ATOMIC_NUMBERS
+        return ACEFF_ATOMIC_NUMBERS
     raise ValueError(f'Unknown model {name}')
 
