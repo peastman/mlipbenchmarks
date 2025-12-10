@@ -14,6 +14,8 @@ steps = int(sys.argv[3])
 atoms = ase.io.read(f'water/water{width}.pdb')
 initial_memory = torch.cuda.device_memory_used(0)
 atoms.calc = models.create_calculator(model)
+atoms.info['charge'] = 0
+atoms.info['spin'] = 1
 opt = ase.optimize.LBFGS(atoms)
 print('Optimizing...')
 t1 = time.time()
