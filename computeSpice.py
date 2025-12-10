@@ -32,8 +32,7 @@ for name in file:
     spin = 1 if (charge+total_atomic_number) % 2 == 0 else 2
     atoms = Atoms(numbers=group['atomic_numbers'])
     atoms.calc = calc
-    atoms.info['charge'] = charge
-    atoms.info['spin'] = spin
+    models.set_charge(atoms, model, charge, spin)
     num_atoms = len(group['atomic_numbers'])
     for positions, grad in zip(group['conformations'], group['dft_total_gradient']):
         atoms.set_positions(positions*bohr_to_A)
