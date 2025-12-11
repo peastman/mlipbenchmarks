@@ -25,10 +25,10 @@ for name in file:
     group = file[name]
     smiles = group['smiles'].asstr()[0]
     mol = Molecule.from_mapped_smiles(smiles, allow_undefined_stereo=True)
-    charge = mol.total_charge.m
+    charge = int(mol.total_charge.m)
     if any(n not in elements for n in group['atomic_numbers']):
         continue
-    total_atomic_number = sum(atom.atomic_number for atom in mol.atoms)
+    total_atomic_number = int(sum(atom.atomic_number for atom in mol.atoms))
     spin = 1 if (charge+total_atomic_number) % 2 == 0 else 2
     atoms = Atoms(numbers=group['atomic_numbers'])
     atoms.calc = calc

@@ -33,13 +33,23 @@ def create_calculator(name):
             from aceff_calculator import AceFFCalculator
             model_file_path = hf_hub_download(repo_id='Acellera/AceFF-1.1', filename='aceff_v1.1.ckpt')
             return AceFFCalculator(model_file=model_file_path,  device='cuda')
+        case 'uma-s-1p1':
+            from fairchem.core import FAIRChemCalculator
+            from fairchem.core.units.mlip_unit import load_predict_unit
+            uma_predictor = load_predict_unit(path="uma-s-1p1.pt", device="cuda")
+            return FAIRChemCalculator(uma_predictor, task_name="omol")
+        case 'uma-m-1p1':
+            from fairchem.core import FAIRChemCalculator
+            from fairchem.core.units.mlip_unit import load_predict_unit
+            uma_predictor = load_predict_unit(path="uma-m-1p1.pt", device="cuda")
+            return FAIRChemCalculator(uma_predictor, task_name="omol")
     raise ValueError(f'Unknown model {name}')
 
 def supports_charge(name):
-    return name in ['mace-omol-0', 'orb-v3', 'aimnet2', 'aceff-1.1']
+    return name in ['mace-omol-0', 'orb-v3', 'aimnet2', 'aceff-1.1', 'uma-s-1p1', 'uma-m-1p1']
 
 def set_charge(atoms, name, charge, spin):
-    if name in ['mace-omol-0', 'orb-v3', 'aceff-1.1']:
+    if name in ['mace-omol-0', 'orb-v3', 'aceff-1.1', 'uma-s-1p1', 'uma-m-1p1']:
         atoms.info['charge'] = charge
         atoms.info['spin'] = spin
     elif name == 'aimnet2':
@@ -49,7 +59,7 @@ def set_charge(atoms, name, charge, spin):
 def supported_elements(name):
     if name.startswith('mace-off') or name == 'maceles-off':
         return set(ase.atom.atomic_numbers[symbol] for symbol in ['H', 'C', 'N', 'O', 'F', 'P', 'S', 'Cl', 'Br', 'I'])
-    if name.startswith('mace-omol') or name.startswith('mace-mh') or name == 'orb-v3':
+    if name.startswith('mace-omol') or name.startswith('mace-mh') or name.startswith('uma') or name == 'orb-v3':
         return set(range(1, 90))
     if name == 'aimnet2':
         return set(ase.atom.atomic_numbers[symbol] for symbol in ['H', 'B', 'C', 'N', 'O', 'F', 'Si', 'P', 'S', 'Cl', 'As', 'Se', 'Br', 'I'])
