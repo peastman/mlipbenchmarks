@@ -20,6 +20,9 @@ def create_calculator(name):
         case 'maceles-off':
             from mace.calculators.foundations_models import mace_off
             return mace_off('https://github.com/ChengUCB/les_fit/blob/main/MACELES-OFF/MACELES-OFF_small_converted.model?raw=true', default_dtype='float32')
+        case 'egret-1':
+            from mace.calculators.foundations_models import mace_off
+            return mace_off('https://github.com/rowansci/egret-public/blob/master/compiled_models/EGRET_1.model?raw=true', default_dtype='float32')
         case 'orb-v3':
             from orb_models.forcefield import pretrained
             from orb_models.forcefield.calculator import ORBCalculator
@@ -57,7 +60,7 @@ def set_charge(atoms, name, charge, spin):
         atoms.calc.set_mult(spin)
 
 def supported_elements(name):
-    if name.startswith('mace-off') or name == 'maceles-off':
+    if name.startswith('mace-off') or name == 'maceles-off' or name.startswith('egret'):
         return set(ase.atom.atomic_numbers[symbol] for symbol in ['H', 'C', 'N', 'O', 'F', 'P', 'S', 'Cl', 'Br', 'I'])
     if name.startswith('mace-omol') or name.startswith('mace-mh') or name.startswith('uma') or name == 'orb-v3':
         return set(range(1, 90))
