@@ -6,54 +6,56 @@ from openff.toolkit.topology import Molecule
 import sys
 from collections import defaultdict
 import numpy as np
+import pandas as pd
 
 bohr_to_A = 0.529177210903
-bohr_to_nm = 0.0529177210903
-A_to_nm = 0.1
 hartree_to_kJpermole = 2625.4996394798254
 ev_to_kJpermole = 96.48533212331002
 
 model = sys.argv[1]
 calc = models.create_calculator(model)
 file = h5py.File('spice/SPICE-test.hdf5')
-count_charged = defaultdict(int)
-count_uncharged = defaultdict(int)
-error_charged = defaultdict(float)
-error_uncharged = defaultdict(float)
 elements = models.supported_elements(model)
+names = []
+sizes = []
+charges = []
+errors = []
 for name in file:
     group = file[name]
+    if any(n not in elements for n in group['atomic_numbers']):
+        continue
     smiles = group['smiles'].asstr()[0]
     mol = Molecule.from_mapped_smiles(smiles, allow_undefined_stereo=True)
     charge = int(mol.total_charge.m)
-    if any(n not in elements for n in group['atomic_numbers']):
-        continue
     total_atomic_number = int(sum(atom.atomic_number for atom in mol.atoms))
     spin = 1 if (charge+total_atomic_number) % 2 == 0 else 2
     atoms = Atoms(numbers=group['atomic_numbers'])
     atoms.calc = calc
     models.set_charge(atoms, model, charge, spin)
     num_atoms = len(group['atomic_numbers'])
-    for positions, grad in zip(group['conformations'], group['dft_total_gradient']):
+    energies = []
+    for positions, energy in zip(group['conformations'], group['formation_energy']):
         atoms.set_positions(positions*bohr_to_A)
-        ref_forces = -grad*hartree_to_kJpermole/bohr_to_nm
-        forces = atoms.get_forces()*ev_to_kJpermole/A_to_nm
-        delta = forces-ref_forces
-        error = np.sum(np.linalg.norm(delta, axis=1)/np.linalg.norm(ref_forces, axis=1))
-        if charge == 0:
-            count_uncharged[num_atoms] += num_atoms
-            error_uncharged[num_atoms] += error
-        else:
-            count_charged[num_atoms] += num_atoms
-            error_charged[num_atoms] += error
-print('Charged:')
-for num_atoms in sorted(count_charged.keys()):
-    print(num_atoms, error_charged[num_atoms]/count_charged[num_atoms])
-print('Uncharged:')
-for num_atoms in sorted(count_uncharged.keys()):
-    print(num_atoms, error_uncharged[num_atoms]/count_uncharged[num_atoms])
-print('Total Error:')
-print('charged:', sum(error_charged.values())/sum(count_charged.values()))
-print('uncharged:', sum(error_uncharged.values())/sum(count_uncharged.values()))
-print('combined:', (sum(error_charged.values())+sum(error_uncharged.values()))/(sum(count_charged.values())+sum(count_uncharged.values())))
+        ref_energy = energy*hartree_to_kJpermole
+        energy = atoms.get_potential_energy()*ev_to_kJpermole
+        energies.append((ref_energy, energy))
+    error = 0.0
+    n = len(energies)
+    for i in range(n):
+        for j in range(i):
+            error += abs((energies[i][0]-energies[j][0]) - (energies[i][1]-energies[j][1]))
+    error /= n*(n-1)/2
+    names.append(name)
+    sizes.append(num_atoms)
+    charges.append(charge)
+    errors.append(error)
+
+df = pd.DataFrame({
+    'name': names,
+    'atoms': sizes,
+    'charge': charges,
+    'error': errors
+})
+df.to_csv(f'spice/{model}.csv')
+print('Total Error:', np.mean(errors))
 
