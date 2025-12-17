@@ -6,7 +6,6 @@ import ase.md
 import ase.md.velocitydistribution
 import ase.optimize
 import ase.units
-import torch
 import models
 import h5py
 from openff.toolkit.topology import Molecule
@@ -24,7 +23,7 @@ charge = int(mol.total_charge.m)
 total_atomic_number = int(sum(atom.atomic_number for atom in mol.atoms))
 spin = 1 if (charge+total_atomic_number) % 2 == 0 else 2
 atoms = Atoms(numbers=group['atomic_numbers'])
-initial_memory = torch.cuda.device_memory_used(0)
+initial_memory = models.get_memory_used()
 atoms.calc = models.create_calculator(model)
 models.set_charge(atoms, model, charge, spin)
 atoms.set_positions(group['conformations'][0]*bohr_to_A)
@@ -44,6 +43,7 @@ md.run(steps)
 t2 = time.time()
 print('Simulation time:', t2-t1)
 print('Steps/second:', steps/(t2-t1))
-final_memory = torch.cuda.device_memory_used(0)
+final_memory = models.get_memory_used()
 print('Memory (GB):', (final_memory-initial_memory)/2**30)
+print(name)
 print(model)

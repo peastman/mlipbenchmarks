@@ -5,14 +5,13 @@ import ase.md
 import ase.md.velocitydistribution
 import ase.optimize
 import ase.units
-import torch
 import models
 
 width = sys.argv[1]
 model = sys.argv[2]
 steps = int(sys.argv[3]) if len(sys.argv) > 3 else 100
 atoms = ase.io.read(f'water/water{width}.pdb')
-initial_memory = torch.cuda.device_memory_used(0)
+initial_memory = models.get_memory_used()
 atoms.calc = models.create_calculator(model)
 atoms.info['charge'] = 0
 atoms.info['spin'] = 1
@@ -32,6 +31,7 @@ md.run(steps)
 t2 = time.time()
 print('Simulation time:', t2-t1)
 print('Steps/second:', steps/(t2-t1))
-final_memory = torch.cuda.device_memory_used(0)
+final_memory = models.get_memory_used()
 print('Memory (GB):', (final_memory-initial_memory)/2**30)
+print(width)
 print(model)

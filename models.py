@@ -46,10 +46,16 @@ def create_calculator(name):
             from fairchem.core.units.mlip_unit import load_predict_unit
             uma_predictor = load_predict_unit(path="uma-m-1p1.pt", device="cuda")
             return FAIRChemCalculator(uma_predictor, task_name="omol")
+        case 'fennix-bio1-small':
+            from fennol.ase import FENNIXCalculator
+            return FENNIXCalculator(model='fennix-bio1S.fnx')
+        case 'fennix-bio1-medium':
+            from fennol.ase import FENNIXCalculator
+            return FENNIXCalculator(model='fennix-bio1M.fnx')
     raise ValueError(f'Unknown model {name}')
 
 def supports_charge(name):
-    return name in ['mace-omol-0', 'orb-v3', 'aimnet2', 'aceff-1.1', 'uma-s-1p1', 'uma-m-1p1']
+    return name in ['mace-omol-0', 'orb-v3', 'aimnet2', 'aceff-1.1', 'uma-s-1p1', 'uma-m-1p1', 'fennix-bio1-small', 'fennix-bio1-medium']
 
 def set_charge(atoms, name, charge, spin):
     if name in ['mace-omol-0', 'orb-v3', 'aceff-1.1', 'uma-s-1p1', 'uma-m-1p1']:
@@ -58,6 +64,11 @@ def set_charge(atoms, name, charge, spin):
     elif name == 'aimnet2':
         atoms.calc.set_charge(charge)
         atoms.calc.set_mult(spin)
+    elif name.startswith('fennix'):
+        # Only the total charge matters.
+        charges = [0]*len(atoms)
+        charges[0] = charge
+        atoms.set_initial_charges(charges)
 
 def supported_elements(name):
     if name.startswith('mace-off') or name == 'maceles-off' or name.startswith('egret'):
@@ -69,5 +80,14 @@ def supported_elements(name):
     if name == 'aceff-1.1':
         from aceff_calculator import ACEFF_ATOMIC_NUMBERS
         return ACEFF_ATOMIC_NUMBERS
+    if name.startswith('fennix'):
+        return set(ase.atom.atomic_numbers[symbol] for symbol in ['H', 'B', 'C', 'N', 'O', 'F', 'Si', 'P', 'S', 'Cl', 'Br', 'I'])
     raise ValueError(f'Unknown model {name}')
 
+def get_memory_used():
+    try:
+        import torch
+        return torch.cuda.device_memory_used(0)
+    except:
+        import jax
+        return jax.devices()[0].memory_stats()['peak_bytes_in_use']
