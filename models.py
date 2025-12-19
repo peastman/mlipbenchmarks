@@ -48,10 +48,10 @@ def create_calculator(name):
             return FAIRChemCalculator(uma_predictor, task_name="omol")
         case 'fennix-bio1-small':
             from fennol.ase import FENNIXCalculator
-            return FENNIXCalculator(model='fennix-bio1S.fnx')
+            return FENNIXCalculator(model='fennix-bio1S.fnx', matmul_prec='highest', gpu_preprocessing=True)
         case 'fennix-bio1-medium':
             from fennol.ase import FENNIXCalculator
-            return FENNIXCalculator(model='fennix-bio1M.fnx')
+            return FENNIXCalculator(model='fennix-bio1M.fnx', matmul_prec='highest', gpu_preprocessing=True)
     raise ValueError(f'Unknown model {name}')
 
 def supports_charge(name):
