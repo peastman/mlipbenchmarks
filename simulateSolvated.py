@@ -5,6 +5,7 @@ import ase.md.velocitydistribution
 import ase.optimize
 import ase.units
 import models
+import numpy as np
 from rdkit import Chem
 
 model = sys.argv[1]
@@ -31,15 +32,19 @@ for atom in mol.GetAtoms():
 
 opt = ase.optimize.LBFGS(atoms)
 print('Optimizing...')
-opt.run(steps=10)
+opt.run(steps=50)
 md = ase.md.Langevin(atoms, 1*ase.units.fs, temperature_K=temperature, friction=0.001/ase.units.fs)
 ase.md.velocitydistribution.MaxwellBoltzmannDistribution(atoms, temperature_K=temperature)
+print('Equilibrating...')
+md.run(1000)
 print('Simulating...')
-maxtemp = 0
+temps = []
 for _ in range(steps):
     md.run(1)
-    maxtemp = max(maxtemp, atoms.get_temperature())
-print('Maximum temperature:', maxtemp)
+    temps.append(atoms.get_temperature())
+print('Average temperature:', np.mean(temps))
+print('Standard deviation:', np.std(temps))
+print('Maximum temperature:', np.max(temps))
 error = False
 for i, j, dist in bonds:
     dist2 = atoms.get_distance(i, j, True)
