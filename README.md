@@ -2,8 +2,8 @@
 
 This repository contains scripts and data files from the paper
 
-Peter Eastman, Evan Pretti, Thomas E. Markland.  "A Comparative Benchmark of Pretrained Machine Learning Interatomic
-Potentials for Molecular Simulations."
+Peter Eastman, Evan Pretti, Thomas E. Markland.  "Accuracy and Efficiency Benchmarks of Pretrained Machine Learning
+Potentials for Molecular Simulations."  (https://arxiv.org/abs/2601.16331)
 
 ### computeSpice.py
 
