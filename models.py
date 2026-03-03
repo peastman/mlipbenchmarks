@@ -33,14 +33,14 @@ def create_calculator(name):
             return AIMNet2ASE('aimnet2')
         case 'aceff-1.1':
             from huggingface_hub import hf_hub_download
-            from aceff_calculator import AceFFCalculator
+            from torchmdnet.calculators import TMDNETCalculator
             model_file_path = hf_hub_download(repo_id='Acellera/AceFF-1.1', filename='aceff_v1.1.ckpt')
-            return AceFFCalculator(model_file=model_file_path,  device='cuda')
+            return TMDNETCalculator(model_file_path,  device='cuda')
         case 'aceff-2.0':
             from huggingface_hub import hf_hub_download
-            from aceff_calculator import AceFFCalculator
+            from torchmdnet.calculators import TMDNETCalculator
             model_file_path = hf_hub_download(repo_id='Acellera/AceFF-2.0', filename='aceff_v2.0.ckpt')
-            return AceFFCalculator(model_file=model_file_path,  device='cuda')
+            return TMDNETCalculator(model_file_path,  device='cuda', coulomb_cutoff=10.0)
         case 'uma-s-1p1':
             from fairchem.core import FAIRChemCalculator
             from fairchem.core.units.mlip_unit import load_predict_unit
