@@ -25,9 +25,9 @@ def create_calculator(name):
             return mace_off('https://github.com/rowansci/egret-public/blob/master/compiled_models/EGRET_1.model?raw=true', default_dtype='float32')
         case 'orb-v3':
             from orb_models.forcefield import pretrained
-            from orb_models.forcefield.calculator import ORBCalculator
-            orbff = pretrained.orb_v3_conservative_omol(device='cuda', precision="float32-highest")
-            return ORBCalculator(orbff, device='cuda')
+            from orb_models.forcefield.inference.calculator import ORBCalculator
+            orbff, atoms_adapter = pretrained.orb_v3_conservative_omol(device='cuda', precision="float32-highest")
+            return ORBCalculator(orbff, atoms_adapter=atoms_adapter, device='cuda')
         case 'aimnet2':
             from aimnet.calculators import AIMNet2ASE
             return AIMNet2ASE('aimnet2')
