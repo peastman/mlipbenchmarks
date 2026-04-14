@@ -44,12 +44,14 @@ def create_calculator(name):
         case 'uma-s-1p1':
             from fairchem.core import FAIRChemCalculator
             from fairchem.core.units.mlip_unit import load_predict_unit
-            uma_predictor = load_predict_unit(path="uma-s-1p1.pt", device="cuda")
+            # Change "default" to "turbo" to use turbo mode.
+            uma_predictor = load_predict_unit(path="uma-s-1p1.pt", device="cuda", inference_settings="default")
             return FAIRChemCalculator(uma_predictor, task_name="omol")
         case 'uma-m-1p1':
             from fairchem.core import FAIRChemCalculator
             from fairchem.core.units.mlip_unit import load_predict_unit
-            uma_predictor = load_predict_unit(path="uma-m-1p1.pt", device="cuda")
+            # Change "default" to "turbo" to use turbo mode.
+            uma_predictor = load_predict_unit(path="uma-m-1p1.pt", device="cuda", inference_settings="default")
             return FAIRChemCalculator(uma_predictor, task_name="omol")
         case 'fennix-bio1-small':
             from fennol.ase import FENNIXCalculator
