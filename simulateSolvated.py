@@ -36,11 +36,11 @@ opt.run(steps=50)
 md = ase.md.Langevin(atoms, 1*ase.units.fs, temperature_K=temperature, friction=0.001/ase.units.fs)
 ase.md.velocitydistribution.MaxwellBoltzmannDistribution(atoms, temperature_K=temperature)
 print('Equilibrating...')
-md.run(1000)
+md.run(10000)
 print('Simulating...')
 temps = []
 for _ in range(steps):
-    md.run(1)
+    md.run(10)
     temps.append(atoms.get_temperature())
 print('Average temperature:', np.mean(temps))
 print('Standard deviation:', np.std(temps))
